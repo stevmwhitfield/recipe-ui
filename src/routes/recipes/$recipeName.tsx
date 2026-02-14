@@ -1,20 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/recipes/$recipeName')({
     loader: ({ params, context }) => {
-        let recipe;
-        let categoryName = '';
+        const entry = context.recipeMap.get(params.recipeName);
+        const category = entry?.categoryName ?? '';
 
-        for (const category of context.recipes) {
-            const found = category.recipes.find((r) => r.slug === params.recipeName);
-            if (found) {
-                recipe = found;
-                categoryName = category.name;
-                break;
-            }
-        }
-
-        if (!recipe) throw new Error(`Recipe "${params.recipeName}" not found`);
+        const recipe = entry?.recipe;
+        if (!recipe) throw new Error(`Recipe "${params.recipeName}" not found.`);
 
         const allRecipes = context.recipes.flatMap((c) => c.recipes);
         const currentIndex = allRecipes.findIndex((r) => r.slug === params.recipeName);
@@ -23,18 +15,18 @@ export const Route = createFileRoute('/recipes/$recipeName')({
             currentIndex < allRecipes.length - 1 ? allRecipes[currentIndex + 1] : null;
         const previousRecipe = currentIndex > 0 ? allRecipes[currentIndex - 1] : null;
 
-        return { recipe, categoryName, nextRecipe, previousRecipe };
+        return { recipe, category, nextRecipe, previousRecipe };
     },
     component: Recipe,
 });
 
 export default function Recipe() {
-    const { recipe, categoryName, nextRecipe, previousRecipe } = Route.useLoaderData();
+    const { recipe, category, nextRecipe, previousRecipe } = Route.useLoaderData();
 
     return (
         <>
             <h1>{recipe.name}</h1>
-            <p>Category: {categoryName}</p>
+            <p>Category: {category}</p>
             <p>Time: {recipe.time}</p>
 
             <nav>
