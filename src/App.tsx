@@ -1,25 +1,16 @@
-import './App.css';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
 import { mockRecipeData } from './data/recipes';
 
-function App() {
-    return (
-        <main id="page">
-            <h1>Recipes</h1>
-            {mockRecipeData.map((c) => (
-                <div key={c.name} className="category">
-                    <h2>{c.name}</h2>
-                    {c.recipes.map((r) => (
-                        <div key={r.name} className="recipe">
-                            <a href={r.slug} className="name">
-                                {r.name}
-                            </a>
-                            <span className="time">{r.time}</span>
-                        </div>
-                    ))}
-                </div>
-            ))}
-        </main>
-    );
-}
+const recipeMap = new Map();
+mockRecipeData.forEach((category) => {
+    category.recipes.forEach((recipe) => {
+        recipeMap.set(recipe.slug, { recipe, categoryName: category.name });
+    });
+});
 
-export default App;
+const router = createRouter({ routeTree, context: { recipes: mockRecipeData, recipeMap } });
+
+export default function App() {
+    return <RouterProvider router={router} />;
+}
